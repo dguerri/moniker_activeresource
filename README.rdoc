@@ -1,0 +1,156 @@
+= moniker_activeresource
+
+Moniker Ruby and RoR bindings implemented with ActiveResource
+
+Moniker - DNS for OpenStack — Read more at https://launchpad.net/moniker
+
+Please note: Moniker is still in alpha stage so is the same for this gem!
+
+Tested on Moniker commit 2c66df879574cb595bd8f703818f503badce3bad
+
+== Installation
+
+Not yet released on rubygems.
+To install this gem clone this repository and:
+
+    gem install bundler # If not already installed
+    bundle install
+    rake install
+
+== Sample usage
+
+This section is incomplete. Please see unit tests for more info.
+
+=== Keystone authentication and Moniker setup
+
+    OpenStack::Keystone::Public::Base.site = "https://my.api.com:5000/v2.0/"
+
+    auth = OpenStack::Keystone::Public::Auth.new :username  => "me",
+                                                 :password  => "my pass",
+                                                 :tenant_id => "my_tenant"
+
+    if auth.save
+      Moniker::Base.token = auth.token
+      Moniker::Base.site  = auth.endpoint_for('dns').publicURL
+      # *** Set the sudo tenant id (if needed!)
+      Moniker::Base.sudo_tenant = "another tenant id"
+    else
+      raise "Cannot authenticate!"
+    end
+
+=== Create a new server (requires an administrative role)
+
+    new_server = Moniker::Server.create :name => "test.test-server.test."
+
+=== List existing server (requires an administrative role)
+
+    servers = Moniker::Server.all
+
+=== Get a server (requires an administrative role)
+
+    # By name
+    server = Moniker::Server.find_by_name "test.test-server.test."
+    # By id
+    Moniker::Server.find "ffffffff-ffff-ffff-ffff-ffffffffffff"
+
+=== Update a server  (requires an administrative role)
+
+    server = Moniker::Server.find_by_name "test.test-server.test."
+    server.update_attributes :name => "up-test.test-server.test."
+    server.save
+    # Done! Now revert
+    server.name = "test.test-server.test."
+    server.save
+
+=== Destroy a server (requires an administrative role)
+
+    server = Moniker::Server.find_by_name "test.test-server.test."
+    server.destroy
+
+=== Create a new domain (depending on your configuration, this might require an administrative role)
+
+    new_domain = Moniker::Domain.create :name => "test.test-domain.test.", :email => "fake@pretend.net"
+
+=== List existing domains
+
+    domains = Moniker::Domain.all
+
+=== Get a domain
+
+    # By name
+    domain = Moniker::Domain.find_by_name "test.test-domain.test."
+    # By id
+    Moniker::Domain.find "ffffffff-ffff-ffff-ffff-ffffffffffff"
+
+=== Update a domain (depending on your configuration, this might require an administrative role)
+
+    domain = Moniker::Domain.find_by_name n"test.test-domain.test."ame
+    domain.update_attributes :ttl => 225
+    domain.save
+    # Again but now without update_attributes
+    domain.ttl = 128
+    domain.save
+
+=== Destroy a domain (depending on your configuration, this might require an administrative role)
+
+    domain = Moniker::Domain.find_by_name n"test.test-domain.test."ame
+    domain.destroy
+
+=== Create a new record
+
+    domain = Moniker::Domain.find_by_name "test.test-domain.test."
+    new_record = Moniker::Record.create :name => record_name,
+                                        :type => "A",
+                                        :data => "1.1.1.1",
+                                        :domain_id => domain.id
+
+=== List existing records in a domain
+
+    domain = Moniker::Domain.find_by_name "test.test-domain.test."
+    records = Moniker::Record.all :params => {:domain_id => domain.id}
+
+=== Get a record in a domain
+
+    domain = Moniker::Domain.find_by_name "test.test-domain.test."
+    # All by name
+    records = Moniker::Record.find_all_by_name record_name, :params => {:domain_id => domain.id}
+    # All by type
+    records = Moniker::Record.find_all_by_type "AAAA", :params => {:domain_id => domain.id}
+    # All by data
+    records = Moniker::Record.find_all_by_data "1.1.1.1", :params => {:domain_id => domain.id}
+    # By id
+    record = Moniker::Record.find "ffffffff-ffff-ffff-ffff-ffffffffffff", :params => {:domain_id => domain.id}
+
+=== Update a record in a domain
+
+    record = Moniker::Record.find "ffffffff-ffff-ffff-ffff-ffffffffffff", :params => {:domain_id => domain.id}
+    record.update_attributes :ttl => 225
+    record.save
+    # Again but now without update_attributes
+    record.ttl = 128
+    record.save
+
+=== Destroy a record in a domain
+
+    record = Moniker::Record.find "ffffffff-ffff-ffff-ffff-ffffffffffff", :params => {:domain_id => domain.id}
+    record.destroy
+
+== Known limitation
+
+Works only with OpenStack Keystone authentication
+
+== Contributing to moniker_activeresource
+ 
+* Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.
+* Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it.
+* Fork the project.
+* Start a feature/bugfix branch.
+* Commit and push until you are happy with your contribution.
+* Make sure to add tests for it. This is important so I don't break it in a future version unintentionally.
+* Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
+
+== Copyright
+
+Copyright (c) 2013 Davide Guerri (@dguerri davide.guerri@gmail.com). See LICENSE.txt for
+further details.
+
